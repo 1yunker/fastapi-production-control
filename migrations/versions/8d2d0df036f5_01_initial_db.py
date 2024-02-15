@@ -31,8 +31,8 @@ def upgrade() -> None:
     sa.Column('nomenclature', sa.String(), nullable=False),
     sa.Column('code_ekn', sa.String(), nullable=False),
     sa.Column('work_center_id', sa.String(), nullable=False),
-    sa.Column('start_date', sa.DateTime(), nullable=False),
-    sa.Column('end_date', sa.DateTime(), nullable=False),
+    sa.Column('start_date', sa.TIMESTAMP(timezone=True), nullable=False),
+    sa.Column('end_date', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.Column('is_closed', sa.Boolean(), nullable=True),
     sa.Column('closed_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')

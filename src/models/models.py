@@ -1,4 +1,12 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (
+    TIMESTAMP,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -21,8 +29,8 @@ class Batch(Base):
     code_ekn = Column(String, nullable=False)
     work_center_id = Column(String, nullable=False)
 
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
+    start_date = Column(TIMESTAMP(timezone=True), nullable=False)
+    end_date = Column(TIMESTAMP(timezone=True), nullable=False)
 
     is_closed = Column(Boolean, default=False)
     closed_at = Column(DateTime)

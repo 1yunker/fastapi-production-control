@@ -54,9 +54,11 @@ class RepositoryDB(
     async def create(
             self, db: AsyncSession, *, obj_in: CreateSchemaType
     ) -> ModelType:
-        obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self._model(**obj_in_data)
-        db.add(db_obj)
+        # obj_in_data = jsonable_encoder(obj_in)
+        # db_obj = self._model(**obj_in_data)
+        # db.add(db_obj)
+        db_obj = obj_in
+        db.add(obj_in)
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
