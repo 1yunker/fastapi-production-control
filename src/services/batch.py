@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.logger import LOGGING
 from db.db import get_session
 from models.models import Batch as BatchModel
-from schemas.batch import BatchRequest
+from schemas.batch import BatchCreate, BatchUpdate
 
 from .base import RepositoryDB
 
 
-class RepositoryBatch(RepositoryDB[BatchModel, BatchRequest, BatchRequest]):
+class RepositoryBatch(RepositoryDB[BatchModel, BatchCreate, BatchUpdate]):
     pass
 
 
@@ -23,7 +23,7 @@ logger = logging.getLogger()
 
 
 async def create_batches(
-        batches: list[BatchRequest],
+        batches: list[BatchCreate],
         db: AsyncSession = Depends(get_session)
 ):
     # Write batches in DB
@@ -39,14 +39,11 @@ async def create_batches(
             )
             if not batch_obj:
                 batch_obj = await batch_crud.create(
-                    db=db,
-                    obj_in=batch
+                    db=db, obj_in=batch
                 )
             else:
                 batch_obj = await batch_crud.update(
-                    db=db,
-                    db_obj=batch_obj,
-                    obj_in=batch
+                    db=db, db_obj=batch_obj, obj_in=batch
                 )
             batch_objects.append(batch_obj)
         except Exception as err:
@@ -70,3 +67,24 @@ async def read_batch(
             detail="Batch doesn't exists"
         )
     return batch
+
+
+async def update_batch(
+        id: int,
+        batch: BatchUpdate,
+        db: AsyncSession = Depends(get_session)
+):
+    batch_obj = await read_batch(id, db)
+    if batch.is_closed:
+        batch.closed_at = datetime.now()
+    else:
+        batch.closed_at = None
+    batch_obj = await batch_crud.update(
+        db=db, db_obj=batch_obj, obj_in=batch
+    )
+    if batch_obj is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Batch doesn't exists"
+        )
+    return batch_obj

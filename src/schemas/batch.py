@@ -1,10 +1,11 @@
 import datetime
 from typing import Optional
 
+from pydantic._internal._model_construction import ModelMetaclass
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class BatchRequest(BaseModel):
+class BatchCreate(BaseModel):
     is_closed: bool = Field(..., alias="СтатусЗакрытия")
     description: str = Field(..., alias="ПредставлениеЗаданияНаСмену")
     work_center: str = Field(..., alias="Линия")
@@ -21,6 +22,22 @@ class BatchRequest(BaseModel):
     end_date: datetime.datetime = Field(..., alias="ДатаВремяОкончанияСмены")
 
     closed_at: Optional[datetime.datetime] = None
+
+
+class AllOptional(ModelMetaclass):
+    def __new__(cls, name, bases, namespaces, **kwargs):
+        annotations = namespaces.get('__annotations__', {})
+        for base in bases:
+            annotations.update(base.__annotations__)
+        for field in annotations:
+            if not field.startswith('__'):
+                annotations[field] = Optional[annotations[field]]
+        namespaces['__annotations__'] = annotations
+        return super().__new__(cls, name, bases, namespaces, **kwargs)
+
+
+class BatchUpdate(BatchCreate, metaclass=AllOptional):
+    pass
 
 
 class BatchResponse(BaseModel):
