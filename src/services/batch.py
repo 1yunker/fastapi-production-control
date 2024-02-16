@@ -88,3 +88,30 @@ async def update_batch(
             detail="Batch doesn't exists"
         )
     return batch_obj
+
+
+async def read_batches(
+    is_closed: bool = None,
+    number: int = None,
+    date: str = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_session)
+):
+    kwargs = dict()
+    if is_closed is not None:
+        kwargs['is_closed'] = is_closed
+    if number is not None:
+        kwargs['number'] = number
+    if date is not None:
+        kwargs['date'] = datetime.strptime(date, "%Y-%m-%d")
+
+    batches = await batch_crud.get_multi(
+        db=db, skip=skip, limit=limit, **kwargs
+    )
+    if not batches:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Batches not found"
+        )
+    return batches

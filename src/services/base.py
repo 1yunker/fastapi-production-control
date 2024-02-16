@@ -48,8 +48,8 @@ class RepositoryDB(
             self, db: AsyncSession, number: int, date: date
     ) -> Optional[ModelType]:
         statement = (
-            select(self._model).
-            where(
+            select(self._model)
+            .where(
                 and_(self._model.number == number,
                      self._model.date == date)
             )
@@ -58,9 +58,15 @@ class RepositoryDB(
         return results.scalar_one_or_none()
 
     async def get_multi(
-            self, db: AsyncSession, *, skip=0, limit=100
+            self, db: AsyncSession, *args, skip=0, limit=100, **kwargs
     ) -> List[ModelType]:
-        statement = select(self._model).offset(skip).limit(limit)
+        statement = (
+            select(self._model)
+            .filter(*args)
+            .filter_by(**kwargs)
+            .offset(skip)
+            .limit(limit)
+        )
         results = await db.execute(statement=statement)
         return results.scalars().all()
 

@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from schemas.batch import BatchCreate, BatchResponse, BatchUpdate
-from services.batch import create_batches, read_batch, update_batch
+from services.batch import (
+    create_batches,
+    read_batch,
+    read_batches,
+    update_batch,
+)
 
 router = APIRouter()
 
@@ -27,7 +32,7 @@ async def get_batch(
     id: int,
     db: AsyncSession = Depends(get_session)
 ):
-    return await read_batch(id, db)
+    return await read_batch(id=id, db=db)
 
 
 @router.patch(
@@ -39,4 +44,22 @@ async def patch_batch(
     batch: BatchUpdate,
     db: AsyncSession = Depends(get_session)
 ):
-    return await update_batch(id, batch, db)
+    return await update_batch(id=id, batch=batch, db=db)
+
+
+@router.get(
+    '/batches',
+    # response_model=list[BatchResponse],
+    description='Получение сменных заданий (партий) по различным фильтрам.')
+async def get_batches(
+    db: AsyncSession = Depends(get_session),
+    is_closed: bool = None,
+    number: int = None,
+    date: str = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    return await read_batches(
+        is_closed=is_closed, number=number, date=date,
+        skip=skip, limit=limit, db=db
+    )
