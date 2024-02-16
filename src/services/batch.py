@@ -12,11 +12,11 @@ from schemas.batch import BatchRequest
 from .base import RepositoryDB
 
 
-class RepositoryFile(RepositoryDB[BatchModel, BatchRequest, BatchRequest]):
+class RepositoryBatch(RepositoryDB[BatchModel, BatchRequest, BatchRequest]):
     pass
 
 
-batch_crud = RepositoryFile(BatchModel)
+batch_crud = RepositoryBatch(BatchModel)
 
 logging.basicConfig = LOGGING
 logger = logging.getLogger()
@@ -30,10 +30,24 @@ async def create_batches(
     batch_objects = list()
     for batch in batches:
         try:
-            batch_obj = await batch_crud.create(
-                db=db,
-                obj_in=BatchModel(**batch.model_dump(exclude_none=True))
+            if batch.is_closed:
+                batch.closed_at = datetime.now()
+            else:
+                batch.closed_at = None
+            batch_obj = await batch_crud.get_by_number_and_date(
+                db=db, number=batch.number, date=batch.date
             )
+            if not batch_obj:
+                batch_obj = await batch_crud.create(
+                    db=db,
+                    obj_in=batch
+                )
+            else:
+                batch_obj = await batch_crud.update(
+                    db=db,
+                    db_obj=batch_obj,
+                    obj_in=batch
+                )
             batch_objects.append(batch_obj)
         except Exception as err:
             logger.error(f'{err}')

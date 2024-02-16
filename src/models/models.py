@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -36,6 +37,7 @@ class Batch(Base):
     closed_at = Column(DateTime)
 
     products = relationship('Product', backref='batch')
+    UniqueConstraint(number, date, name='uix_batch_number_date')
 
 
 class Product(Base):

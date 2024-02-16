@@ -1,8 +1,8 @@
+from datetime import date, datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import and_, null, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.models import Base
@@ -44,6 +44,19 @@ class RepositoryDB(
         results = await db.execute(statement=statement)
         return results.scalar_one_or_none()
 
+    async def get_by_number_and_date(
+            self, db: AsyncSession, number: int, date: date
+    ) -> Optional[ModelType]:
+        statement = (
+            select(self._model).
+            where(
+                and_(self._model.number == number,
+                     self._model.date == date)
+            )
+        )
+        results = await db.execute(statement=statement)
+        return results.scalar_one_or_none()
+
     async def get_multi(
             self, db: AsyncSession, *, skip=0, limit=100
     ) -> List[ModelType]:
@@ -54,11 +67,8 @@ class RepositoryDB(
     async def create(
             self, db: AsyncSession, *, obj_in: CreateSchemaType
     ) -> ModelType:
-        # obj_in_data = jsonable_encoder(obj_in)
-        # db_obj = self._model(**obj_in_data)
-        # db.add(db_obj)
-        db_obj = obj_in
-        db.add(obj_in)
+        db_obj = self._model(**obj_in.model_dump())
+        db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
@@ -80,7 +90,7 @@ class RepositoryDB(
         await db.commit()
         return db_obj
 
-    async def delete(self, db: AsyncSession, *, id: int) -> ModelType:
+    async def delete(self, db: AsyncSession, *, id: int) -> None:
         db_obj = db.get(self._model, id)
         await db.delete(db_obj)
-        return db_obj
+        return None

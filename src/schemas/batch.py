@@ -5,8 +5,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class BatchRequest(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     is_closed: bool = Field(..., alias="СтатусЗакрытия")
     description: str = Field(..., alias="ПредставлениеЗаданияНаСмену")
     work_center: str = Field(..., alias="Линия")
@@ -22,22 +20,28 @@ class BatchRequest(BaseModel):
     start_date: datetime.datetime = Field(..., alias="ДатаВремяНачалаСмены")
     end_date: datetime.datetime = Field(..., alias="ДатаВремяОкончанияСмены")
 
+    closed_at: Optional[datetime.datetime] = None
+
 
 class BatchResponse(BaseModel):
-    id: int
-    description: str
-    work_center: str
-    shift: str
+    model_config = ConfigDict(from_attributes=True)
 
-    squad: str
-    number: int
-    date: datetime.date
-    nomenclature: str
+    # id: int
+    # description: str
+    # work_center: str
+    # shift: str
 
-    code_ekn: str
-    work_center_id: str
-    start_date: datetime.datetime
-    end_date: datetime.datetime
+    # squad: str
+    # number: int
+    # date: datetime.date
+    # nomenclature: str
 
-    is_closed: bool
-    closed_at: Optional[datetime.datetime]
+    # code_ekn: str
+    # work_center_id: str
+    # start_date: datetime.datetime
+    # end_date: datetime.datetime
+
+    # is_closed: bool
+    # closed_at: Optional[datetime.datetime]
+
+    products: Optional[list[str]]
