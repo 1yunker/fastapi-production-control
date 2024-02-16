@@ -57,3 +57,16 @@ async def create_batches(
             )
 
     return batch_objects
+
+
+async def read_batch(
+        id: int,
+        db: AsyncSession = Depends(get_session)
+):
+    batch = await batch_crud.get(db=db, id=id)
+    if batch is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Batch doesn't exists"
+        )
+    return batch

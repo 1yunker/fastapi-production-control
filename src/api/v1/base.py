@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from schemas.batch import BatchRequest, BatchResponse
-from services.batch import create_batches
+from services.batch import create_batches, read_batch
 
 router = APIRouter()
 
@@ -19,25 +19,12 @@ async def post_batches(
     return await create_batches(bathes, db)
 
 
-# @router.get(
-#         '/batches/{id}/',
-#         response_model=BatchRead,
-#         description='Добавление сменных заданий (партий).')
-# def get_batch(id: int, db: Session = Depends(get_db)):
-#     batch = db.query(Batch).get(id)
-#     if batch is None:
-#         raise HTTPException(status_code=404, detail="Batch doesn't exists")
-#     return batch
-
-# @router.get(
-#     '/files/download',
-#     status_code=status.HTTP_200_OK,
-#     description='Скачать файл по переданному пути или по идентификатору.'
-# )
-# @cache(expire=60)
-# async def download_file_by_path_or_id(
-#         path: str,
-#         db: AsyncSession = Depends(get_session),
-#         user=Depends(manager)
-# ):
-#     return await download_file(path, db, user)
+@router.get(
+    '/batches/{id}/',
+    # response_model=BatchResponse,
+    description='Получение сменного задания (партии) по ID.')
+async def get_batch(
+    id: int,
+    db: AsyncSession = Depends(get_session)
+):
+    return await read_batch(id, db)
