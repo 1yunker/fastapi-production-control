@@ -3,12 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from schemas.batch import BatchCreate, BatchResponse, BatchUpdate
+from schemas.product import ProductAggregate, ProductCreate
 from services.batch import (
     create_batches,
     read_batch,
     read_batches,
     update_batch,
 )
+from services.product import aggregate_product, create_products
 
 router = APIRouter()
 
@@ -60,6 +62,32 @@ async def get_batches(
     limit: int = 100
 ):
     return await read_batches(
-        is_closed=is_closed, number=number, date=date,
-        skip=skip, limit=limit, db=db
+        is_closed=is_closed,
+        number=number,
+        date=date,
+        skip=skip,
+        limit=limit,
+        db=db
     )
+
+
+@router.post(
+    '/products',
+    status_code=status.HTTP_201_CREATED,
+    description='Добавление продукции для сменного задания (партии).')
+async def post_products(
+    products: list[ProductCreate],
+    db: AsyncSession = Depends(get_session)
+):
+    return await create_products(products, db)
+
+
+@router.post(
+    '/products/aggregate',
+    status_code=status.HTTP_202_ACCEPTED,
+    description='Аггрегация продукции по ID сменного задания (партии).')
+async def post_products(
+    product: ProductAggregate,
+    db: AsyncSession = Depends(get_session)
+):
+    return await aggregate_product(product, db)

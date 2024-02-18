@@ -57,6 +57,13 @@ class RepositoryDB(
         results = await db.execute(statement=statement)
         return results.scalar_one_or_none()
 
+    async def get_by_code(
+            self, db: AsyncSession, code: str
+    ) -> Optional[ModelType]:
+        statement = select(self._model).where(self._model.code == code)
+        results = await db.execute(statement=statement)
+        return results.scalar_one_or_none()
+
     async def get_multi(
             self, db: AsyncSession, *args, skip=0, limit=100, **kwargs
     ) -> List[ModelType]:
