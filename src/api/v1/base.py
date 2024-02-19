@@ -1,9 +1,11 @@
+import datetime
+from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from schemas.batch import BatchCreate, BatchResponse, BatchUpdate
-from schemas.product import ProductAggregate, ProductCreate
+from schemas.product import ProductCreate, ProductRequest
 from services.batch import (
     create_batches,
     read_batch,
@@ -28,7 +30,7 @@ async def post_batches(
 
 @router.get(
     '/batches/{id}/',
-    # response_model=BatchResponse,
+    response_model=BatchResponse,
     description='Получение сменного задания (партии) по ID.')
 async def get_batch(
     id: int,
@@ -39,7 +41,6 @@ async def get_batch(
 
 @router.patch(
     '/batches/{id}/',
-    # response_model=BatchResponse,
     description='Изменение сменного задания (партии) по ID.')
 async def patch_batch(
     id: int,
@@ -51,13 +52,13 @@ async def patch_batch(
 
 @router.get(
     '/batches',
-    # response_model=list[BatchResponse],
+    response_model=list[BatchResponse],
     description='Получение сменных заданий (партий) по различным фильтрам.')
 async def get_batches(
     db: AsyncSession = Depends(get_session),
     is_closed: bool = None,
     number: int = None,
-    date: str = None,
+    date: datetime.date = None,
     skip: int = 0,
     limit: int = 100
 ):
@@ -76,7 +77,7 @@ async def get_batches(
     status_code=status.HTTP_201_CREATED,
     description='Добавление продукции для сменного задания (партии).')
 async def post_products(
-    products: list[ProductCreate],
+    products: list[ProductRequest],
     db: AsyncSession = Depends(get_session)
 ):
     return await create_products(products, db)
@@ -86,8 +87,8 @@ async def post_products(
     '/products/aggregate',
     status_code=status.HTTP_202_ACCEPTED,
     description='Аггрегация продукции по ID сменного задания (партии).')
-async def post_products(
-    product: ProductAggregate,
+async def post_product(
+    product: ProductCreate,
     db: AsyncSession = Depends(get_session)
 ):
     return await aggregate_product(product, db)

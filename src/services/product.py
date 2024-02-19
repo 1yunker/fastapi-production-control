@@ -7,7 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.logger import LOGGING
 from db.db import get_session
 from models.models import Product as ProductModel
-from schemas.product import ProductCreate, ProductAggregate, ProductUpdate
+from schemas.product import (
+    ProductCreate,
+    ProductRequest,
+    ProductUpdate,
+)
 
 from .base import RepositoryDB
 from .batch import batch_crud
@@ -26,23 +30,30 @@ logger = logging.getLogger()
 
 
 async def create_products(
-        products: list[ProductCreate],
+        products: list[ProductRequest],
         db: AsyncSession = Depends(get_session)
 ):
-    # Write products in DB
     product_objects = list()
     for product in products:
         try:
-            batch_obj = await batch_crud.get_by_number_and_date(
+            product_obj = await product_crud.get_by_code(
                 db=db,
-                number=product.batch_number,
-                date=product.batch_date
+                code=product.code
             )
-            if batch_obj:
-                product_obj = await product_crud.create(
-                    db=db, obj_in=product
+            # Игнорируем продукцию, если она уже существует
+            if not product_obj:
+                batch_obj = await batch_crud.get_by_number_and_date(
+                    db=db,
+                    number=product.batch_number,
+                    date=product.batch_date
                 )
-                product_objects.append(product_obj)
+                if batch_obj:
+                    product_obj = await product_crud.create(
+                        db=db,
+                        obj_in=ProductCreate(code=product.code,
+                                             batch_id=int(batch_obj.id))
+                    )
+                    product_objects.append(product_obj)
         except Exception as err:
             logger.error(f'{err}')
             raise HTTPException(
@@ -54,7 +65,7 @@ async def create_products(
 
 
 async def aggregate_product(
-        product: ProductAggregate,
+        product: ProductCreate,
         db: AsyncSession = Depends(get_session)
 ):
     product_obj = await product_crud.get_by_code(
@@ -76,7 +87,8 @@ async def aggregate_product(
         product_obj = await product_crud.update(
             db=db,
             db_obj=product_obj,
-            obj_in={'is_aggregated': True, 'aggregated_at': datetime.now()}
+            obj_in=ProductUpdate(is_aggregated=True,
+                                 aggregated_at=datetime.now())
         )
         return product_obj.code
     raise HTTPException(

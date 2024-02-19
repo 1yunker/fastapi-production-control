@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,6 @@ async def create_batches(
         batches: list[BatchCreate],
         db: AsyncSession = Depends(get_session)
 ):
-    # Write batches in DB
     batch_objects = list()
     for batch in batches:
         try:
@@ -35,15 +34,17 @@ async def create_batches(
             else:
                 batch.closed_at = None
             batch_obj = await batch_crud.get_by_number_and_date(
-                db=db, number=batch.number, date=batch.date
+                db=db,
+                number=batch.number,
+                date=batch.date
             )
             if not batch_obj:
-                batch_obj = await batch_crud.create(
-                    db=db, obj_in=batch
-                )
+                batch_obj = await batch_crud.create(db=db, obj_in=batch)
             else:
                 batch_obj = await batch_crud.update(
-                    db=db, db_obj=batch_obj, obj_in=batch
+                    db=db,
+                    db_obj=batch_obj,
+                    obj_in=batch
                 )
             batch_objects.append(batch_obj)
         except Exception as err:
@@ -64,7 +65,7 @@ async def read_batch(
     if batch is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Batch doesn't exists"
+            detail='Batch not exists'
         )
     return batch
 
@@ -80,20 +81,22 @@ async def update_batch(
     else:
         batch.closed_at = None
     batch_obj = await batch_crud.update(
-        db=db, db_obj=batch_obj, obj_in=batch
+        db=db,
+        db_obj=batch_obj,
+        obj_in=batch
     )
     if batch_obj is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Batch doesn't exists"
+            detail='Batch not exists'
         )
     return batch_obj
 
 
 async def read_batches(
-    is_closed: bool = None,
-    number: int = None,
-    date: str = None,
+    is_closed: bool | None = None,
+    number: int | None = None,
+    date: datetime.date = None,
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_session)
@@ -104,7 +107,7 @@ async def read_batches(
     if number is not None:
         kwargs['number'] = number
     if date is not None:
-        kwargs['date'] = datetime.strptime(date, "%Y-%m-%d")
+        kwargs['date'] = date
 
     batches = await batch_crud.get_multi(
         db=db, skip=skip, limit=limit, **kwargs

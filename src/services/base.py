@@ -1,8 +1,8 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel
-from sqlalchemy import and_, null, select, update
+from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.models import Base
@@ -78,7 +78,7 @@ class RepositoryDB(
         return results.scalars().all()
 
     async def create(
-            self, db: AsyncSession, *, obj_in: CreateSchemaType
+            self, db: AsyncSession, obj_in: CreateSchemaType
     ) -> ModelType:
         db_obj = self._model(**obj_in.model_dump())
         db.add(db_obj)

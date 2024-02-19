@@ -36,7 +36,7 @@ class Batch(Base):
     is_closed = Column(Boolean, default=False)
     closed_at = Column(DateTime)
 
-    products = relationship('Product', backref='batch')
+    products = relationship('Product', backref='batch', lazy='selectin')
     UniqueConstraint(number, date, name='uix_batch_number_date')
 
 

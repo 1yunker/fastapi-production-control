@@ -1,8 +1,8 @@
 import datetime
 from typing import Optional
 
-from pydantic._internal._model_construction import ModelMetaclass
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
+from .product import ProductRead
 
 
 class BatchCreate(BaseModel):
@@ -24,41 +24,40 @@ class BatchCreate(BaseModel):
     closed_at: Optional[datetime.datetime] = None
 
 
-class AllOptional(ModelMetaclass):
-    def __new__(cls, name, bases, namespaces, **kwargs):
-        annotations = namespaces.get('__annotations__', {})
-        for base in bases:
-            annotations.update(base.__annotations__)
-        for field in annotations:
-            if not field.startswith('__'):
-                annotations[field] = Optional[annotations[field]]
-        namespaces['__annotations__'] = annotations
-        return super().__new__(cls, name, bases, namespaces, **kwargs)
+class BatchUpdate(BatchCreate):
+    is_closed: Optional[bool] = None
+    description: Optional[str] = None
+    work_center: Optional[str] = None
+    shift: Optional[str] = None
 
+    squad: Optional[str] = None
+    number: Optional[int] = None
+    date: Optional[datetime.date] = None
+    nomenclature: Optional[str] = None
 
-class BatchUpdate(BatchCreate, metaclass=AllOptional):
-    pass
+    code_ekn: Optional[str] = None
+    work_center_id: Optional[str] = None
+    start_date: Optional[datetime.datetime] = None
+    end_date: Optional[datetime.datetime] = None
 
 
 class BatchResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    id: int
+    description: str
+    work_center: str
+    shift: str
 
-    # id: int
-    # description: str
-    # work_center: str
-    # shift: str
+    squad: str
+    number: int
+    date: datetime.date
+    nomenclature: str
 
-    # squad: str
-    # number: int
-    # date: datetime.date
-    # nomenclature: str
+    code_ekn: str
+    work_center_id: str
+    start_date: datetime.datetime
+    end_date: datetime.datetime
 
-    # code_ekn: str
-    # work_center_id: str
-    # start_date: datetime.datetime
-    # end_date: datetime.datetime
+    is_closed: bool
+    closed_at: Optional[datetime.datetime]
 
-    # is_closed: bool
-    # closed_at: Optional[datetime.datetime]
-
-    products: Optional[list[str]]
+    products: Optional[list[ProductRead]]
