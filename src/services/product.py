@@ -7,11 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.logger import LOGGING
 from db.db import get_session
 from models.models import Product as ProductModel
-from schemas.product import (
-    ProductCreate,
-    ProductRequest,
-    ProductUpdate,
-)
+from schemas.product import ProductCreate, ProductRequest, ProductUpdate
 
 from .base import RepositoryDB
 from .batch import batch_crud
