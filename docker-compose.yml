@@ -5,18 +5,20 @@ volumes:
 
 services:
   db:
-    image: postgres:14.5
-    container_name: postgres
+    image: postgres:14.5-alpine
+    container_name: fastapi-postgres
     env_file: .env.example
     volumes:
       - pg_data:/var/lib/postgresql/data
+    expose:
+      - 5432
     restart: unless-stopped
   
   fastapi-webserver:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: webserver
+    container_name: fastapi-webserver
     env_file: .env.example
     ports:
       - 8000:8000
